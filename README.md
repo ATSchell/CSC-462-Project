@@ -18,7 +18,7 @@ Group project for CSC 462, distributed computing course at UVic
 
 #### Notes:
 - Requires Python3 and modules grpcio, grpcio-tools, Pillow and rasterio to be installed
-- Requires /Output/results directory on machine running worker.py and /ndsi_output/ and /Output/tiles1 and /Output/tiles2 directories on machine running master.py
+- Requires /Output/results directory on machine running worker.py and /Output/processed/ and /Output/tiles1 and /Output/tiles2 directories on machine running master.py
 - IP address can be changed from localhost to run on servers, I used internal 10. IP addresses and all my machines were on the same Azure vnet
 - Protocol Buffers are compiled with
 
