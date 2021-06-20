@@ -1,4 +1,4 @@
-import pprint
+#import pprint
 import sys
 from concurrent import futures
 import logging
@@ -142,7 +142,7 @@ class ImageTransfer(dist_processing_pb2_grpc.ImageTransferServicer):
     def ReturnImage(self, request, context):
         band64 = base64.b64decode(request.image)
         img = Image.open(io.BytesIO(band64))
-        img.save('./ndsi_output/' + request.image_name + request.worker_name + '.tiff')
+        img.save('./Output/processed/' + request.image_name + request.worker_name + '.tiff')
 
         global tasks_remaining
         global tasks
