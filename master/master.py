@@ -105,14 +105,16 @@ def get_next_files():
 
     rem_tasks = tasks_remaining
 
-    while tasks_remaining > 0 and rem_tasks > 0:
-        temp_task = tasks[rem_tasks - 1]
-        if temp_task["status"] == "running" or temp_task["worker_id"] != "unassigned":
-            rem_tasks = rem_tasks - 1
-            continue
-        else:
-            return tasks[rem_tasks - 1]
-
+    if tasks_remaining > 0 and rem_tasks > 0:
+        for job in tasks:
+            #temp_task = tasks[rem_tasks - 1]
+            #if temp_task["status"] == "running" or temp_task["worker_id"] != "unassigned":
+                #rem_tasks = rem_tasks - 1
+                #continue
+            #else:
+                #return tasks[rem_tasks - 1]
+            if job["status"] == "waiting":
+                return job
     return
 
 # gRPC Handler
