@@ -84,4 +84,3 @@ if __name__ == '__main__':
     # Since the workers on on external servers they wil run continuously requesting tasks
     while True:
         run()
-        print("cycle")

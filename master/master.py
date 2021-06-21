@@ -103,16 +103,8 @@ def get_next_files():
     global tasks_remaining
     global tasks
 
-    rem_tasks = tasks_remaining
-
-    if tasks_remaining > 0 and rem_tasks > 0:
+    if tasks_remaining > 0:
         for job in tasks:
-            #temp_task = tasks[rem_tasks - 1]
-            #if temp_task["status"] == "running" or temp_task["worker_id"] != "unassigned":
-                #rem_tasks = rem_tasks - 1
-                #continue
-            #else:
-                #return tasks[rem_tasks - 1]
             if job["status"] == "waiting":
                 return job
     return
@@ -154,12 +146,9 @@ class ImageTransfer(dist_processing_pb2_grpc.ImageTransferServicer):
         mutex.acquire()
         returned_task = tasks[request.task_id]
         returned_task["status"] = "completed"
+        tasks_remaining = tasks_remaining - 1
         mutex.release()
 
-        tasks_remaining = tasks_remaining - 1
-
-
-        # Need to decrement total tasks and change status to completed here
         return dist_processing_pb2.ImageDone(done=True)
 
 
