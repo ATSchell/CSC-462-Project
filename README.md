@@ -20,6 +20,7 @@ Group project for CSC 462, distributed computing course at UVic
 - Requires Python3 and modules grpcio, grpcio-tools, Pillow and rasterio to be installed
 - Requires /Output/results directory on machine running worker.py and /Output/processed/ and /Output/tiles1 and /Output/tiles2 directories on machine running master.py
 - IP address can be changed from localhost to run on servers, I used internal 10. IP addresses and all my machines were on the same Azure vnet
+- worker.py is designed to run continuosly requesting tasks, master.py blocks until it is ready to assign and send tasks to the worker
 - Protocol Buffers are compiled with
 
 ```python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. dist_processing.proto```
