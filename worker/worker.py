@@ -29,10 +29,11 @@ def run():
             elif rpc_error.code() == grpc.StatusCode.UNAVAILABLE:
                 continue
             else:
-                print("gRPC Error: "+ rpc_error.details())
+                #print("gRPC Error: "+ rpc_error.details())
                 continue
         break
 
+    warnings.filterwarnings('ignore')
     # Receive an encoded response
     band_input_1 = base64.b64decode(response.image)
     img = Image.open(io.BytesIO(band_input_1))
@@ -50,7 +51,6 @@ def run():
     green = band3.read(1).astype('float32')
     swir = band11.read(1).astype('float32')
 
-    warnings.filterwarnings('ignore')
     index = 0
     ndvi = green
     for i, j in zip(green, swir):
@@ -59,9 +59,8 @@ def run():
         except ZeroDivisionError:
             ndvi[index] = 0
         index = index + 1
-    warnings.resetwarnings()
 
-    # export ndvi image
+    # export ndvi/ndsi image
     ndvi_image = rasterio.open('./Intermediate/result-' + str(os.getpid()) + '.tiff', 'w', width=band11.width,
                               height=band11.height,count=1, crs='EPSG:3857', transform=band11.transform, dtype='float32')
     ndvi_image.write(ndvi, 1)
@@ -74,6 +73,7 @@ def run():
     image_bytes = buffer.read()
     buffer.close()
     output_image = base64.b64encode(image_bytes)
+    warnings.resetwarnings()
 
     response = stub.ReturnImage(dist_processing_pb2.ProcessedImage(worker_name=str(os.getpid()),
                                                                    image_name=response.image_name, image=output_image))
@@ -82,5 +82,8 @@ def run():
 if __name__ == '__main__':
     #logging.basicConfig()
     # Since the workers on on external servers they wil run continuously requesting tasks
+    counter = 0
     while True:
+        print(counter)
+        counter = counter + 1
         run()

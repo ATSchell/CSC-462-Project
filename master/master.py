@@ -1,6 +1,7 @@
-#import pprint
+# import pprint
 import re
 import sys
+import time
 from concurrent import futures
 import logging
 import io
@@ -45,9 +46,18 @@ def tiling(input_file_path, output_directory):
             # print(window)
             meta['transform'] = transform
             meta['width'], meta['height'] = window.width, window.height
-            outpath = os.path.join(output_directory, 'tile_{}-{}.jp2'.format(int(window.col_off), int(window.row_off)))
+            out_file_name = re.findall(r'[^\/]+(?=\.)', input_file_path)
+
+            out_file_name = out_file_name[0]
+            out_file_name = out_file_name.replace("_B03_20m", "")
+            out_file_name = out_file_name.replace("_B04_20m", "")
+            out_file_name = out_file_name.replace("_B08_20m", "")
+            out_file_name = out_file_name.replace("_B11_20m", "")
+
+            outpath = os.path.join(output_directory, out_file_name+'_{}-{}.jp2'.format(int(window.col_off), int(window.row_off)))
             with rio.open(outpath, 'w', **meta) as outds:
                 outds.write(inds.read(window=window))
+
 
 # This function assigns each set of image tile pairs from each layer as a task
 def create_tasks(input_file1, input_file2, directory1, directory2):
@@ -64,7 +74,8 @@ def create_tasks(input_file1, input_file2, directory1, directory2):
                 "filename2": filename2,
                 "path1": os.path.join(directory1, filename1),
                 "path2": os.path.join(directory2, filename2),
-                "status": "waiting"
+                "status": "waiting",
+                "started:": "0"
             }
             tasks.append(new_dict)
             continue
@@ -75,6 +86,7 @@ def create_tasks(input_file1, input_file2, directory1, directory2):
     tasks_remaining = len(tasks)
     # pprint.pprint(tasks)
     # print(tasks_remaining)
+
 
 # This function loads in JPEG 2000 images to memory
 # Band 2 will be subtracted from band 1
@@ -106,8 +118,15 @@ def get_next_files():
     if tasks_remaining > 0:
         for job in tasks:
             if job["status"] == "waiting":
-                return job
-    return
+                if job["worker_id"] == "unassigned":
+                    return job
+
+            # elif (job["worker_id"] != "unassigned") and ((time.time() - float(job["started"])) > 45.0):
+            # print("[WAITED FOR]")
+            # return job  # Re-assign job that has timed out
+            # print(time.time() - float(job["started"]))
+        return
+
 
 # gRPC Handler
 class ImageTransfer(dist_processing_pb2_grpc.ImageTransferServicer):
@@ -127,6 +146,7 @@ class ImageTransfer(dist_processing_pb2_grpc.ImageTransferServicer):
         mutex.acquire()
         input_files["worker_id"] = request.worker_name
         input_files["status"] = "running"
+        input_files["started"] = str(time.time())
         tasks[input_files["task_id"]] = input_files  # Update task worker assignment and status
         mutex.release()
 
@@ -161,7 +181,7 @@ def serve():
 
 
 if __name__ == '__main__':
-    #logging.basicConfig()
+    # logging.basicConfig()
 
     # The initial input test sites will be determined by an external request from the user interface
     # In the form of a request to the server and handled by another function listening for requests
