@@ -12,8 +12,6 @@ Group project for CSC 462, distributed computing course at UVic
 
 - Can run on Azure free Ubuntu VMs but takes over 35 minutes to complete with 1 master, 2 workers and 2 input Sentinel-2 files to calculate NDVI/NDSI
 
-- Currently writing to files with process PID that worked on it appended before extension for debugging
-
 - NotGeoreferencedWarning appears in worker process, this might be an issue with the current tiling function
 
 #### Notes:
