@@ -7,13 +7,27 @@ services:
     build: master/
 
     command: python3 master.py
-        # volumes:
-        #      - ./input:/usr/app/input
+
+    volumes:
+      - ./Output:/app/Output:rw
+
     ports:
       - 50051:50051
 
 
   worker1:
+
+    build: worker/
+
+    command: python3 worker.py
+
+    network_mode: host
+
+    depends_on:
+      - master
+
+
+  worker2:
 
     build: worker/
 

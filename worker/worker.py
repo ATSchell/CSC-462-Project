@@ -62,11 +62,11 @@ def run():
     warnings.resetwarnings()
 
     # export ndvi image
-    ndvi_image = rasterio.open('./Output/result-' + str(os.getpid()) + '.tiff', 'w', width=band11.width,
+    ndvi_image = rasterio.open('./Intermediate/result-' + str(os.getpid()) + '.tiff', 'w', width=band11.width,
                               height=band11.height,count=1, crs='EPSG:3857', transform=band11.transform, dtype='float32')
     ndvi_image.write(ndvi, 1)
     ndvi_image.close()
-    band = Image.open('./Output/result-' + str(os.getpid()) + '.tiff')
+    band = Image.open('./Intermediate/result-' + str(os.getpid()) + '.tiff')
 
     buffer = io.BytesIO()
     band.save(buffer, 'tiff')
