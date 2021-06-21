@@ -79,6 +79,7 @@ def run():
 
 
 if __name__ == '__main__':
-    logging.basicConfig()
+    #logging.basicConfig()
+    # Since the workers on on external servers they wil run continuously requesting tasks
     while True:
         run()
