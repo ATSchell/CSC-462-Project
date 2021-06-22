@@ -16,7 +16,14 @@ Group project for CSC 462, distributed computing course at UVic
 
 ### Running the System
 
-- To run with docker: docker-compose up d
+- To run with docker: 
+  - Make sure the make sure you have Docker installed and the service is running
+  - From the main directory with docker-compose.yml
+    
+    ```docker-compose up d```
+  - View active docker containers as that are running
+    
+    ```docker ps```
 
 - When running in Docker, files are output to a shared volume located in the /Output/processed sub-directory in the main directory
 
@@ -26,13 +33,13 @@ Group project for CSC 462, distributed computing course at UVic
 
 
 #### Notes:
-- Requires Python3 and modules grpcio, grpcio-tools, Pillow and rasterio to be installed
-- Requires /Output/results directory on machine running worker.py and /Output/processed/ and /Output/tiles1 and /Output/tiles2 directories on machine running master.py
-- IP address can be changed from localhost to run on servers, I used internal 10. IP addresses and all my machines were on the same Azure vnet
-- worker.py is designed to run continuously requesting tasks, master.py blocks until it is ready to assign and send tasks to the worker
+- Requires Python3 and modules grpcio, grpcio-tools, protobuf, Pillow and rasterio to be installed
+- Requires /Intermediate directory on machine running worker.py and /Output/processed/ and /Output/tiles1 and /Output/tiles2 directories on machine running master.py
+- IP address can be changed from localhost to run on servers, I used internal 10.X.X.X IP addresses and all my machines were on the same Azure VNet
+- worker.py is designed to run continuously requesting tasks, master.py waits until it is ready to assign and send tasks to the worker
 - NotGeoreferencedWarning appears in worker process, this might be an issue with the current tiling function
-- Recovering from failures and stalled or stuck workers can be improved 
-- Protocol Buffers are compiled with
-
-```python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. dist_processing.proto```
+- Recovering from failures and stalled or stuck workers needs to be improved 
+- Protocol Buffers are compiled with:
+  
+  ```python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. dist_processing.proto```
 
