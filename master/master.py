@@ -1,4 +1,5 @@
 # import pprint
+import pprint
 import re
 import sys
 import time
@@ -9,9 +10,12 @@ import os
 from threading import Lock
 
 import grpc
+import rasterio
 from PIL import Image
 import base64
 from itertools import product
+
+from osgeo import gdal
 from rasterio import windows
 import rasterio as rio
 
@@ -21,6 +25,9 @@ import dist_processing_pb2_grpc
 mutex = Lock()
 tasks = []
 tasks_remaining = 0
+
+curr_width = 0
+curr_height = 0
 
 
 # This tiling function is based on this
@@ -39,6 +46,11 @@ def tiling(input_file_path, output_directory):
 
     with rio.open(input_file_path) as inds:
         tile_width, tile_height = 256, 256
+
+        global curr_width
+        curr_width = inds.width
+        global curr_height
+        curr_height = inds.height
 
         meta = inds.meta.copy()
 
@@ -128,6 +140,58 @@ def get_next_files():
         return
 
 
+def merge_tiles(tiles_path):
+    global curr_width
+    global curr_height
+
+    curr_width = 5490  #?
+    curr_height = 5490  #?
+    background = Image.new('RGBA', (curr_width, curr_height), (255, 255, 255, 255))
+
+    width_offset = 0
+    height_offset = 0
+    for filename in os.listdir(tiles_path):
+        if filename.endswith(".png"):
+
+            try:
+                img = Image.open("../Output/output_png/"+filename)
+
+            except FileNotFoundError:
+                print(filename+" not found")
+                continue
+
+            file_pos = filename.replace("tile_", "")
+            file_pos = file_pos.replace(".png", "")
+            file_pos = file_pos.split('-')
+
+            background.paste(img, (int(file_pos[0]), int(file_pos[1])))
+
+            img.close()
+
+    background.save('../Output/merged.png')
+
+
+def convertToPNG(tiles_path):
+    for filename in os.listdir(tiles_path):
+        if filename.endswith(".tiff"):
+            output_filename = filename.replace(".tiff", "")
+
+            options_list = [
+                '-ot Byte',
+                '-of PNG',
+                '-b 1',
+                '-scale'
+            ]
+
+            options_string = " ".join(options_list)
+
+            gdal.Translate(
+                '../Output/output_png/'+output_filename+'.png',
+                '../Output/processed/'+filename,
+                options=options_string
+            )
+
+
 # gRPC Handler
 class ImageTransfer(dist_processing_pb2_grpc.ImageTransferServicer):
 
@@ -137,6 +201,7 @@ class ImageTransfer(dist_processing_pb2_grpc.ImageTransferServicer):
 
         if tasks_remaining <= 0:
             print("done")
+            merge_tiles("./Output/processed")
             sys.exit(0)
 
         input_files = get_next_files()
@@ -185,6 +250,9 @@ if __name__ == '__main__':
 
     # The initial input test sites will be determined by an external request from the user interface
     # In the form of a request to the server and handled by another function listening for requests
+    # convertToPNG("../Output/processed/")
+    #merge_tiles("../Output/output_png/")
+
     create_tasks('T09UYT_20190320T192111_B03_20m.jp2', 'T09UYT_20190320T192111_B11_20m.jp2',
                  './Output/tiles1/', './Output/tiles2/')
     print('setup complete')
