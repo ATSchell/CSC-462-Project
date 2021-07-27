@@ -14,10 +14,12 @@ Group project for CSC 462, distributed computing course at UVic
 
 - Currently, processing is done on Arbutus inside Docker containers with 1 master and 2 works but can scale up
 
+- Query coordinates for two corners from EarthDaily mosaic, downloads the 32-bit image then processed NDVI and returns a processed 8-bit PNG
+
 ### Running the System
 
 - To run with docker: 
-  - Make sure the make sure you have Docker installed and the service is running
+  - Make sure the make sure you have Docker installed, and the service is running
   - From the main directory with docker-compose.yml
     
     ```docker-compose up d```
