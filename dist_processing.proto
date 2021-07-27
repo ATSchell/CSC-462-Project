@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+// How to Compile
+// python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. dist_processing.proto
+
+package dist_processing;
+
+service ImageTransfer {
+    rpc RequestImage (ImageRequest) returns (ImageReply) {}
+    rpc ReturnImage (ProcessedImage) returns (ImageDone) {}
+}
+
+message ImageRequest {
+  string worker_name = 1;
+}
+
+message ImageReply {
+    int32 task_id = 1;
+    string image_name = 2;
+    bytes image = 3;
+}
+
+message ProcessedImage {
+    int32 task_id = 1;
+    string worker_name = 2;
+    string image_name = 3;
+    bytes image = 4;
+}
+
+message ImageDone {
+    bool done = 1;
+}

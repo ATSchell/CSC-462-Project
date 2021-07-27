@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Klinaklini Glacier</title>
+    <meta charset="utf-8" />
+    <link 
+        rel="stylesheet" 
+        href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css"
+    />
+  
+</head>
+<body>
+    <div id="map" style="width: 100%; height:900px; margin:0 auto"></div>
+    <title>Klinaklini Glacier NDVI</title>
+    <script
+        src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js">
+    </script>
+
+    <script>
+
+     // center of the map
+var center = [51.4880, -126.053];
+
+// Create the map
+var map = L.map('map').setView(center, 7);
+
+// Set up the OSM layer
+L.tileLayer(
+  'http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+  }).addTo(map);
+
+//var fs = require("fs");
+//var text = fs.readFileSync('file:///Users/owner/Documents/CSC%20462/Project/Phase%20II/CSC-462-Project/master/Output/output_merged/downloaded_file3-coordinates.txt');
+//var textByLine = text.split(" ")
+     //console.log(textByLine)
+
+var imageUrl = 'file:///Users/owner/Documents/CSC%20462/Project/Phase%20II/CSC-462-Project/master/Output/output_merged/downloaded_file3-merged.png',
+  imageBounds = [center, [51.2910, -125.686]];
+
+L.imageOverlay(imageUrl, imageBounds).addTo(map);
+L.imageOverlay(imageUrl, imageBounds).bringToFront();
+
+    </script>
+</body>
+</html>
