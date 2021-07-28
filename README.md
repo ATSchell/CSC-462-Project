@@ -22,7 +22,7 @@ Group project for CSC 462, distributed computing course at UVic
   - Make sure the make sure you have Docker installed, and the service is running
   - From the main directory with docker-compose.yml
     
-    ```docker-compose up d```
+    ```docker-compose up -d```
   - View active docker containers as that are running
     
     ```docker ps```
