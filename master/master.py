@@ -21,6 +21,9 @@ from rasterio import windows
 import rasterio as rio
 from rasterio.io import MemoryFile
 
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 import dist_processing_pb2
 import dist_processing_pb2_grpc
 
@@ -58,6 +61,14 @@ def download_images():
                    yRes=OUTPUT_SPACING_METRES,
                    resampleAlg='cubic')
     ds = None
+
+def add_colour(file_path, out_path):
+    img = mpimg.imread(file_path)
+    lum_img = img[:, :, 0]
+    imgplot = plt.imshow(lum_img)
+    plt.axis('off')
+    imgplot.set_cmap('nipy_spectral')
+    plt.savefig(out_path, bbox_inches='tight', dpi=550, pad_inches=0)
 
 
 # This tiling function is based on this
@@ -194,6 +205,8 @@ def merge_tiles(tiles_path):
 
     if len(file_pos) > 0:
         background.save('./output_merged/'+str(filename_prefix)+'-merged.png')
+        add_colour('./output_merged/'+str(filename_prefix)+'-merged.png',
+                   './output_merged/'+str(filename_prefix)+'-output.png')
         f = open('./output_merged/'+str(filename_prefix)+'-coordinates.txt', "w+")
         f.write(str(UL_LAT)+" "+str(UL_LNG)+" "+str(LR_LAT)+" "+str(LR_LNG))
 
@@ -300,7 +313,7 @@ class ImageTransfer(dist_processing_pb2_grpc.ImageTransferServicer):
 
 
 def check_parameters():
-    if abs(UL_LAT - LR_LAT) > 0.1500000 or (abs(UL_LNG) - abs(LR_LNG)) > 0.35:
+    if abs(UL_LAT - LR_LAT) > 0.4200000 or (abs(UL_LNG) - abs(LR_LNG)) > 0.4200000:
         print("Selected query area it too large")
         sys.exit(1)
 
