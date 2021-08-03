@@ -24,10 +24,17 @@ from rasterio.io import MemoryFile
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
+import psycopg2
+from azure.storage.blob import BlobServiceClient
+
 import dist_processing_pb2
 import dist_processing_pb2_grpc
 
-from config import SIGNED_URL
+from connection import connection_string_azure_psql
+from connection import connection_string_azure_data_lake
+from connection import SIGNED_URL
+from connection import data_lake_folder
+
 from config import OUT_PATH
 from config import OUTPUT_SPACING_METRES
 #from config import PROCESSED_PATH
@@ -46,9 +53,9 @@ curr_width = 0
 curr_height = 0
 
 
-def reset_dir(dir):
-    for f in os.listdir(dir):
-        os.remove(os.path.join(dir, f))
+def reset_dir(dir_path):
+    for f in os.listdir(dir_path):
+        os.remove(os.path.join(dir_path, f))
 
 
 def download_images():
@@ -209,6 +216,7 @@ def merge_tiles(tiles_path):
                    './output_merged/'+str(filename_prefix)+'-output.png')
         f = open('./output_merged/'+str(filename_prefix)+'-coordinates.txt', "w+")
         f.write(str(UL_LAT)+" "+str(UL_LNG)+" "+str(LR_LAT)+" "+str(LR_LNG))
+        return filename_prefix
 
 
 def findMinMax(tiles_path):
@@ -327,20 +335,72 @@ def serve():
     stop_event.wait()
     server.stop(1).wait()
 
+
+def check_database():
+    dbconn = psycopg2.connect(**connection_string_azure_psql)
+    cursor = dbconn.cursor()
+    cursor.execute("SELECT * FROM public.overlays WHERE file_path IS null AND is_earth_daily IS true")
+    #cursor.execute("""INSERT INTO public.overlays (creator, data_description, data_name, lr_lat, lr_lng, overlay_id, resolution, ul_lat, ul_lng, is_earth_daily) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", ('owner', 'ndvi', 'klinaklini', 51.7711, -125.7711, 1, 10, 51.4464, -125.9569, True))
+    #cursor.execute("""SELECT * from public.overlays""")
+    mosaic_entry = cursor.fetchone()
+    rows = cursor.rowcount
+    # Index 7 is overlay_id,
+    # print(mosaic_entry[5], mosaic_entry[6], mosaic_entry[8], mosaic_entry[9], mosaic_entry[10], mosaic_entry[4])
+    dbconn.commit()
+    cursor.close()
+    dbconn.close()
+
+    # Output parameters to config file to be passed into processing program
+    if rows > 0:
+        file = open('config.py', 'w')
+        file.write('OUT_PATH = \'' + str(mosaic_entry[7]) + '_mosaic_raw.tiff\'\n')
+        file.write('OUTPUT_SPACING_METRES = ' + str(mosaic_entry[8]) + '\n')
+        file.write('UL_LAT = ' + str(mosaic_entry[9]) + '\n')
+        file.write('UL_LNG = ' + str(mosaic_entry[10]) + '\n')
+        file.write('LR_LAT = ' + str(mosaic_entry[5]) + '\n')
+        file.write('LR_LNG = ' + str(mosaic_entry[6]) + '\n')
+        file.close()
+    else:
+        return None
+
+    return mosaic_entry
+
+# This function uploaded final processed image to Azure Data Lake Storage
+# and then updates the centralized database with the path in the Data Lake
+def upload_output(output_name, overlay_id):
+    output_path = data_lake_folder + output_name + ".png"
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string_azure_data_lake)
+    container_client = blob_service_client.get_container_client("test")
+    with open("./output_merged/"+output_name+"-output.png", "rb") as data:
+        blob_client = container_client.upload_blob(name=output_path, data=data)
+
+    dbconn = psycopg2.connect(**connection_string_azure_psql)
+    cursor = dbconn.cursor()
+    cursor.execute("UPDATE public.overlays SET file_path = %s WHERE overlay_id = %s", (output_path, overlay_id))
+    dbconn.commit()
+    cursor.close()
+    dbconn.close()
+
 if __name__ == '__main__':
-    # logging.basicConfig()
 
     # The initial input test sites will be determined by an external request from the user interface
     # In the form of a request to the server and handled by another function listening for requests
 
-    check_parameters()
-    download_images()
-    create_tasks(OUT_PATH, './tiles1/')
-    print('setup complete')
-    serve()
+    while True:
+        mosaic = check_database()   # Check is there are any unprocessed mosaic requests
+        if mosaic is None:
+            time.sleep(15)
+            continue
+        check_parameters()          # Make sure the requested parameters are not too large
+        download_images()
+        create_tasks(OUT_PATH, './tiles1/')
+        print('setup complete')
+        serve()
 
-    convertToPNG("./processed/", "./output_png/")
-    merge_tiles("./output_png/")
+        convertToPNG("./processed/", "./output_png/")
+        output_name = merge_tiles("./output_png/")
+        upload_output(output_name, mosaic[7])
+        time.sleep(15)
+
     #webbrowser.open('file:///Users/<add complete path here>/index.html')
-
 
