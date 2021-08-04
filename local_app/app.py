@@ -1,7 +1,8 @@
 import datetime
 import os.path
 
-from flask import Flask, request, send_from_directory
+import flask
+from flask import Flask, request, send_from_directory, render_template
 
 from connection import connection_string_azure_psql
 from connection import connection_string_local_psql
@@ -60,6 +61,7 @@ def get_local():
     json_response = None
 
     overlays = []
+
     for t in ety:
         json_response = {"created": datetime.datetime.isoformat(t[9]), "creator": t[10], "data_description": t[2],
                          "data_name": t[1], "file_path": t[8], "lr_lat": str(t[5]), "lr_lng": str(t[6]),
@@ -68,7 +70,7 @@ def get_local():
         print(json_response)
         overlays.append(json_response)
 
-    return json.dumps(json_response)
+    return render_template('table.html', header=json_response.keys(), contents=overlays)
 
 
 # Share a locally stored dataset from an IOT sensor/drone
@@ -133,8 +135,10 @@ def view_local(selected_id):
     cursor.close()
     dbconn.close()
 
+    print(sel_ety[3], sel_ety[4], sel_ety[5], sel_ety[6], sel_ety[8])
     # redirect to leaftlet map html, pass in coordinates and file path
-    return sel_ety
+    return render_template('map.html', ul_lat=sel_ety[3], ul_lng=sel_ety[4], lr_lat=sel_ety[5], lr_lng=sel_ety[6],
+                           file_path=sel_ety[8])
 
 
 # Open a Azure shared stored data entry as an overlay on a leaflet map
