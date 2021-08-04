@@ -6,7 +6,7 @@
     <title>Kelp Site Analysis Tool</title>
 
     <style>
-        img {padding: 15px;}
+        img {padding: 15px; box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);}
         body {background-color: darkseagreen;}
     </style>
 </head>
@@ -20,20 +20,21 @@
     </div>
     <div class="d-flex justify-content-center">
         <div class="btn-toolbar">
-        <input type="button" class="btn btn-info mb-2 mr-2" value="Open Shared Resources" onclick=" open_shared()">
-        <input type="button" class="btn btn-info mb-2 mr-2" value="Open Local Resources" onclick=" open_local()">
+            <input type="button" class="btn btn-info mb-2 mr-2" value="Open Shared Resources" onclick=" open_shared()">
+            <input type="button" class="btn btn-info mb-2 mr-2" value="Open Local Resources" onclick=" open_local()">
+            <input type="button" class="btn btn-info mb-2 mr-2" value="Create a New NDVI Mosaic" onclick=" open_form()">
         </div>
     </div>
 
 <script>
 function open_shared()
-{
-     location.href = "../../shared";
-}
+{location.href = "../../shared";}
+
 function open_local()
-{
-     location.href = "../../local";
-}
+{location.href = "../../local";}
+
+function open_form()
+{location.href = "../../new/earthdaily"}
 </script>
 
 </body>

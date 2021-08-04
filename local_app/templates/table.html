@@ -12,7 +12,9 @@
                 <th>{{ col }}</th>
             {% endfor %}
             <th> Open </th>
-            <th> Share </th>
+            {% if storage == "local/" %}
+                <th> Share </th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -22,9 +24,11 @@
                     <td>{{ record[col] }}</td>
                 {% endfor %}
                 <td><input type="button" class="editbtn" value="Open on Map" onclick="openMap()">
-                <td><input type="button" class="editbtn" value="Share to Azure">
+                {% if storage == "local/" %}
+                    <td><input type="button" class="editbtn" value="Share to Azure">
+                {% endif %}
                     <script>
-                        function openMap() {location.href = "../view/local/" + {{record["overlay_id"]}} ;}
+                        function openMap() {location.href = "../view/"+ "{{ storage }}" + {{record["overlay_id"]}} ;}
                     </script>
             </tr>
         {% endfor %}
