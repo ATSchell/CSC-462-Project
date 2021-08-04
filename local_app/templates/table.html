@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+     <title>Available Datasets</title>
+</head>
+
+<table class="table" border="1">
+    <thead>
+        <tr>
+            {% for col in header %}
+                <th>{{ col }}</th>
+            {% endfor %}
+            <th> Open </th>
+            <th> Share </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in contents %}
+        <tr>
+            {% for col in header %}
+                <td>{{ record[col] }}</td>
+            {% endfor %}
+            <td><input type="button" class="editbtn" value="Open on Map">
+            <td><input type="button" class="editbtn" value="Share to Azure">
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</html>
