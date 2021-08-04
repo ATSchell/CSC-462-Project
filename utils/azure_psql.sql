@@ -16,6 +16,8 @@ CREATE TABLE public.overlays
     ul_lat numeric,
     ul_lng numeric,
     is_earth_daily boolean NOT NULL,
+    vector boolean NOT NULL DEFAULT false,
+    is_point_entry boolean NOT NULL DEFAULT false,
     CONSTRAINT overlays_pkey PRIMARY KEY (overlay_id)
 )
 WITH (

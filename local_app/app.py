@@ -14,7 +14,7 @@ from azure.storage.blob import BlobServiceClient
 
 app = Flask(__name__)
 
-
+# Direct traffic to homepage
 @app.route('/')
 @app.route('/home')
 @app.route('/index.html')
@@ -234,6 +234,7 @@ def create_new():
     dbconn.close()
     return redirect('/')
 
+
 @app.route('/upload/local/<selected_id>')
 def upload_local(selected_id):
 
@@ -250,7 +251,30 @@ def upload_local(selected_id):
     cursor.close()
     dbconn.close()
 
-    #if f_rows > 0:
+    output_path = sel_ety[8]
+    # If the entry is an image, upload the Data Lake storage
+    if sel_ety[12] != True and sel_ety[13] != True:
+        output_path = data_lake_folder + "shared/" + os.path.basename(sel_ety[8])
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string_azure_data_lake)
+        container_client = blob_service_client.get_container_client("test")
+        with open(sel_ety[8], "rb") as data:
+            blob_client = container_client.upload_blob(name=output_path, data=data)
+
+    if f_rows > 0:
+        dbconn = psycopg2.connect(**connection_string_azure_psql)
+        cursor = dbconn.cursor()
+        cursor.execute("""SELECT overlay_id FROM public.overlays""")
+        new_id = cursor.rowcount + 1
+
+        cursor.execute("""INSERT INTO public.overlays (creator, data_description, data_name, file_path, lr_lat, lr_lng, 
+            overlay_id, ul_lat, ul_lng, is_earth_daily, vector, is_point_entry) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
+             %s, %s, %s, %s)""", (sel_ety[10], sel_ety[2], sel_ety[1], output_path, sel_ety[5], sel_ety[6], new_id,
+             sel_ety[3], sel_ety[4], sel_ety[11], sel_ety[12], sel_ety[13]))
+
+        dbconn.commit()
+        cursor.close()
+        dbconn.close()
+        return redirect('/local')
 
 
 

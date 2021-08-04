@@ -26,7 +26,7 @@
                 <td><a href="{{ "../view/" + storage + record["overlay_id"]|string }}" >Open in Map</a></td>
 
                 {% if storage == "local/" %}
-                    <td><input type="button" class="editbtn" value="Share to Azure"></td>
+                     <td><a href="{{ "../upload/" + storage + record["overlay_id"]|string }}"> Upload to Azure</a></td>
                 {% endif %}
             </tr>
         {% endfor %}
