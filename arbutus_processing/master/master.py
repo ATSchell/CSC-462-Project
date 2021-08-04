@@ -69,6 +69,14 @@ def download_images():
                    resampleAlg='cubic')
     ds = None
 
+# Fix issues where image is vertically and horizontally flipped
+def flip_image(path_to_image):
+    im = Image.open(path_to_image)
+    out = im.transpose(Image.FLIP_LEFT_RIGHT)
+    out2 = out.transpose(Image.ROTATE_180)
+    out2.save(path_to_image)
+
+
 def add_colour(file_path, out_path):
     img = mpimg.imread(file_path)
     lum_img = img[:, :, 0]
@@ -76,6 +84,7 @@ def add_colour(file_path, out_path):
     plt.axis('off')
     imgplot.set_cmap('nipy_spectral')
     plt.savefig(out_path, bbox_inches='tight', dpi=550, pad_inches=0)
+    flip_image(out_path)
 
 
 # This tiling function is based on this
@@ -381,11 +390,11 @@ def upload_output(output_name, overlay_id):
     cursor.close()
     dbconn.close()
 
+
 if __name__ == '__main__':
 
     # The initial input test sites will be determined by an external request from the user interface
     # In the form of a request to the server and handled by another function listening for requests
-
     while True:
         mosaic = check_database()   # Check is there are any unprocessed mosaic requests
         if mosaic is None:
@@ -401,6 +410,4 @@ if __name__ == '__main__':
         output_name = merge_tiles("./output_png/")
         upload_output(output_name, mosaic[7])
         time.sleep(15)
-
-    #webbrowser.open('file:///Users/<add complete path here>/index.html')
 
