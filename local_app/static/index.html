@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>Kelp Site Analysis Tool</title>
+
+    <style>
+        img {padding: 15px;}
+        body {background-color: darkseagreen;}
+    </style>
+</head>
+<body>
+    <div class="d-flex justify-content-center">
+        <h1> Kelp Farming Site Selection Tool</h1>
+    </div>
+    <div class="d-flex justify-content-center">
+        <img src="shane-stagner-4IyllFjr3Rw-unsplash.jpg" alt="Kelp Picture">
+        <!-- https://unsplash.com/photos/4IyllFjr3Rw -->
+    </div>
+    <div class="d-flex justify-content-center">
+        <div class="btn-toolbar">
+        <input type="button" class="btn btn-info mb-2 mr-2" value="Open Shared Resources" onclick=" open_shared()">
+        <input type="button" class="btn btn-info mb-2 mr-2" value="Open Local Resources" onclick=" open_local()">
+        </div>
+    </div>
+
+<script>
+function open_shared()
+{
+     location.href = "../../shared";
+}
+function open_local()
+{
+     location.href = "../../local";
+}
+</script>
+
+</body>
+</html>
