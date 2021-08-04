@@ -39,7 +39,8 @@ def get_shared():
     for t in ety:
         json_response = {"created": t[0], "creator": t[1], "data_description": t[2], "data_name": t[3],
                          "file_path": t[4], "lr_lat": str(t[5]), "lr_lng": str(t[6]), "overlay_id": t[7],
-                         "resolution": t[8], "ul_lat": str(t[9]), "ul_lng": str(t[10]), "is_earth_daily": t[11]}
+                         "resolution": t[8], "ul_lat": str(t[9]), "ul_lng": str(t[10]), "is_earth_daily": t[11],
+                         "vector": t[12], "is_point_entry": t[13]}
 
         overlays.append(json_response)
 
@@ -62,13 +63,16 @@ def get_local():
     overlays = []
 
     for t in ety:
-        json_response = {"created": datetime.datetime.isoformat(t[9]), "creator": t[10], "data_description": t[2],
+        timestamp_ety = t[9]
+        if timestamp_ety is not None:
+            timestamp_ety = datetime.datetime.isoformat(t[9])
+        json_response = {"created": timestamp_ety, "creator": t[10], "data_description": t[2],
                          "data_name": t[1], "file_path": t[8], "lr_lat": str(t[5]), "lr_lng": str(t[6]),
                          "overlay_id": t[0], "resolution": t[7], "ul_lat": str(t[3]), "ul_lng": str(t[4]),
-                         "is_earth_daily": t[11]}
-        print(json_response)
+                         "is_earth_daily": t[11], "vector": t[12], "is_point_entry": t[13]}
         overlays.append(json_response)
 
+    print(overlays)
     return render_template('table.html', header=json_response.keys(), contents=overlays, storage="local/")
 
 
@@ -123,9 +127,13 @@ def share_resource(selected_id):
 # Open a locally stored data entry as an overlay on a leaflet map
 @app.route('/view/local/<selected_id>')
 def view_local(selected_id):
+
+    if selected_id == 'None':
+        return "OK"
+
     dbconn = psycopg2.connect(**connection_string_local_psql)
     cursor = dbconn.cursor()
-    cursor.execute("""SELECT * from public.overlays WHERE overlay_id = %s """, (selected_id,))
+    cursor.execute("""SELECT * from overlays WHERE overlay_id = %s """, (selected_id,))
     sel_ety = cursor.fetchone()
     f_rows = cursor.rowcount
 
@@ -134,13 +142,18 @@ def view_local(selected_id):
     dbconn.close()
 
     # redirect to leaftlet map html, pass in coordinates and file path
-    return render_template('map.html', ul_lat=sel_ety[3], ul_lng=sel_ety[4], lr_lat=sel_ety[5], lr_lng=sel_ety[6],
-                           file_path=sel_ety[8])
+    return render_template('map.html', mname=sel_ety[1], mdesc=sel_ety[2], ul_lat=sel_ety[3], ul_lng=sel_ety[4],
+        lr_lat=sel_ety[5], lr_lng=sel_ety[6], file_path=sel_ety[8], is_earth_daily=sel_ety[11], vector=sel_ety[12],
+        is_point=sel_ety[13])
 
 
 # Open a Azure shared stored data entry as an overlay on a leaflet map
 @app.route('/view/shared/<selected_id>')
 def view_shared(selected_id):
+
+    if selected_id == 'None' or selected_id is None:
+        return "OK"
+
     dbconn = psycopg2.connect(**connection_string_azure_psql)
     cursor = dbconn.cursor()
     cursor.execute("""SELECT * from public.overlays WHERE overlay_id = %s """, (selected_id,))
@@ -152,8 +165,9 @@ def view_shared(selected_id):
     dbconn.close()
 
     # redirect to leaftlet map html, pass in coordinates and file path
-    return render_template('map.html', ul_lat=sel_ety[9], ul_lng=sel_ety[10], lr_lat=sel_ety[5], lr_lng=sel_ety[6],
-                           file_path=sel_ety[4])
+    return render_template('map.html', mname=sel_ety[1], mdesc=sel_ety[2], ul_lat=sel_ety[9], ul_lng=sel_ety[10],
+                           lr_lat=sel_ety[5], lr_lng=sel_ety[6], file_path=sel_ety[4], is_earth_daily=sel_ety[11],
+                           vector=sel_ety[12], is_point=sel_ety[13])
 
 # Activated by button on index.html and opens new form
 @app.route('/new/earthdaily')
@@ -164,7 +178,6 @@ def get_mosaic_parameters():
 # Arbutus program will check database and process the entry
 @app.route('/create/earthmosaic', methods=['POST'])
 def request_mosaic():
-    print(request.form['mname'])
 
     dbconn = psycopg2.connect(**connection_string_azure_psql)
     cursor = dbconn.cursor()
@@ -182,28 +195,47 @@ def request_mosaic():
     return redirect('/')
 
 
+# Request form for new local entry
+@app.route('/new/localentry')
+def get_entry_parameters():
+    return send_from_directory(directory="static", filename="create_new_local_entry.html", path=".")
+
 
 # Create a new local data entry
 # Not complete
-'''
-@app.route('/create/local', methods=['GET', 'POST'])
+
+@app.route('/create/local', methods=['POST'])
 def create_new():
 
-    # Need to take in user inputted parameters for mosaic here
-    default_name = '0'
-    data = request.form.get('input_name', default_name)
-
-    dbconn = psycopg2.connect(**connection_string_azure_psql)
+    dbconn = psycopg2.connect(**connection_string_local_psql)
     cursor = dbconn.cursor()
-    cursor.execute("""INSERT INTO public.overlays (creator, data_description, data_name, lr_lat, lr_lng, overlay_id,
-     resolution, ul_lat, ul_lng, is_earth_daily) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                   ('owner', 'ndvi', 'klinaklini', 51.7711, -125.7711, 1, 10, 51.4464, -125.9569, True))
-    ety = cursor.fetchall()
-    rows = cursor.rowcount
+    cursor.execute("""SELECT overlay_id FROM public.overlays""")
+    new_id = cursor.rowcount + 1
+
+    isVector = False
+    isPoint = False
+    lr_lng = 00.0000
+    lr_lat = 00.0000
+
+    if request.form['selectType'] == "Vector Shape":
+        isVector = True
+        lr_lng = request.form['lr_lng']
+        lr_lat = request.form['lr_lat']
+
+    elif request.form['selectType'] == "Point":
+        isPoint = True
+
+    cursor.execute("""INSERT INTO overlays (creator, data_description, data_name, lr_lat, lr_lng, overlay_id, 
+            ul_lat, ul_lng, is_earth_daily, vector, is_point_entry) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
+             %s, %s, %s)""", ('owner', request.form['mdesc'], request.form['mname'], lr_lat,
+            lr_lng, new_id, request.form['ul_lat'], request.form['ul_lng'], False, isVector, isPoint))
+
     dbconn.commit()
     cursor.close()
     dbconn.close()
-'''
+    return redirect('/')
+
+
 
 if __name__ == '__main__':
     app.run()

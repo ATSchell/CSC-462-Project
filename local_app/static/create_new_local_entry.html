@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>New Local Entry</title>
+</head>
+<body>
+    <div class="d-flex justify-content-center">
+        <h2>Create a Local Entry</h2>
+    </div>
+    <div class="d-flex justify-content-center">
+         <div class="card border-light mb-3" style="width: 42rem;">
+            <form action="/create/local" method="POST">
+                <div class="form-group">
+                    <label for="mname">Entry Name</label>
+                    <input class="form-control" type="text" placeholder="Up to 25 characters for name" name="mname">
+                </div>
+                <div class="form-group">
+                    <label for="mdesc">Entry Description</label>
+                    <input class="form-control" type="text" placeholder="A short description up to 100 characters " name="mdesc">
+                </div>
+                <div class="form-group">
+                    <label for="ul_lat">Upper Left Corner Latitude</label>
+                    <input class="form-control" type="text" placeholder="12.3456" name="ul_lat">
+                    <small id="pointHelp" class="form-text text-muted">Used for points and vector shapes</small>
+                </div>
+                <div class="form-group">
+                    <label for="ul_lng">Upper Left Corner Longitude</label>
+                    <input class="form-control" type="text" placeholder="123.4567" name="ul_lng">
+                    <small id="pointHelp" class="form-text text-muted">Used for points and vector shapes</small>
+                </div>
+                 <div class="form-group">
+                    <label for="ul_lat">Lower Right Corner Latitude</label>
+                    <input class="form-control" type="text" placeholder="12.3456" name="lr_lat">
+                     <small id="vectorHelp" class="form-text text-muted">Required for vector shapes</small>
+                </div>
+                <div class="form-group">
+                    <label for="ul_lng">Lower Right Corner Longitude</label>
+                    <input class="form-control" type="text" placeholder="123.4567" name="lr_lng">
+                    <small id="vectorHelp2" class="form-text text-muted">Required for vector shapes</small>
+                </div>
+                <div class="form-group">
+                    <label for="selectResolution">Select Entry Type</label>
+                    <select class="form-control" name="selectType">
+                        <option>Vector Shape</option>
+                        <option>Point</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

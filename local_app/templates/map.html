@@ -9,7 +9,7 @@
         />
     </head>
 <body>
-    <div id="map" style="width: 100%; height:900px; margin:0 auto"></div>
+    <div id="map" style="width: 99.7%;  position: absolute; top: 0; bottom: 0; margin: auto"></div>
     <script
         src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js">
     </script>
@@ -24,11 +24,22 @@
         L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 20,
             subdomains:['mt0','mt1']}).addTo(map);
 
-        let imageUrl = '{{ file_path }}',
-        imageBounds = [[ {{ lr_lat }}, {{ lr_lng }}], center];
+        if ("{{ is_earth_daily }}" === "True") {
+            let imageUrl = '{{ file_path }}';
+            let imageBounds = [[{{ lr_lat }}, {{ lr_lng }}], center];
+            L.imageOverlay(imageUrl, imageBounds).addTo(map);
+            L.imageOverlay(imageUrl, imageBounds).bringToFront();
+        }
+        else if ("{{ is_point }}" === "True") {
+            let marker = L.marker(center).addTo(map)
+            marker.bindPopup("{{ mname }}" + ": " + "{{ mdesc }}");
+        }
+        else if ("{{ vector }}" === "True") {
+            let bounds = [[{{ lr_lat }}, {{ lr_lng }}], center];
+            let shape = L.rectangle(bounds, {color: "#8e44ad", weight: 3}).addTo(map);
+            shape.bindPopup("{{ mname }}" + ": " + "{{ mdesc }}");
+        }
 
-        L.imageOverlay(imageUrl, imageBounds).addTo(map);
-        L.imageOverlay(imageUrl, imageBounds).bringToFront();
     </script>
 </body>
 </html>

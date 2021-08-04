@@ -23,13 +23,11 @@
                 {% for col in header %}
                     <td>{{ record[col] }}</td>
                 {% endfor %}
-                <td><input type="button" class="editbtn" value="Open on Map" onclick="openMap()">
+                <td><a href="{{ "../view/" + storage + record["overlay_id"]|string }}" >Open in Map</a></td>
+
                 {% if storage == "local/" %}
-                    <td><input type="button" class="editbtn" value="Share to Azure">
+                    <td><input type="button" class="editbtn" value="Share to Azure"></td>
                 {% endif %}
-                    <script>
-                        function openMap() {location.href = "../view/"+ "{{ storage }}" + {{record["overlay_id"]}} ;}
-                    </script>
             </tr>
         {% endfor %}
     </tbody>
