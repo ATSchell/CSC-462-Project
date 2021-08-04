@@ -202,8 +202,6 @@ def get_entry_parameters():
 
 
 # Create a new local data entry
-# Not complete
-
 @app.route('/create/local', methods=['POST'])
 def create_new():
 
@@ -226,14 +224,34 @@ def create_new():
         isPoint = True
 
     cursor.execute("""INSERT INTO overlays (creator, data_description, data_name, lr_lat, lr_lng, overlay_id, 
-            ul_lat, ul_lng, is_earth_daily, vector, is_point_entry) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
-             %s, %s, %s)""", ('owner', request.form['mdesc'], request.form['mname'], lr_lat,
-            lr_lng, new_id, request.form['ul_lat'], request.form['ul_lng'], False, isVector, isPoint))
+            ul_lat, ul_lng, is_earth_daily, vector, is_point_entry, file_path) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
+             %s, %s, %s, %s)""", ('owner', request.form['mdesc'], request.form['mname'], lr_lat,
+            lr_lng, new_id, request.form['ul_lat'], request.form['ul_lng'], False, isVector, isPoint,
+            request.form['customFile']))
 
     dbconn.commit()
     cursor.close()
     dbconn.close()
     return redirect('/')
+
+@app.route('/upload/local/<selected_id>')
+def upload_local(selected_id):
+
+    if selected_id == 'None' or selected_id is None:
+        return "OK"
+
+    dbconn = psycopg2.connect(**connection_string_local_psql)
+    cursor = dbconn.cursor()
+    cursor.execute("""SELECT * from overlays WHERE overlay_id = %s """, (selected_id,))
+    sel_ety = cursor.fetchone()
+    f_rows = cursor.rowcount
+
+    dbconn.commit()
+    cursor.close()
+    dbconn.close()
+
+    #if f_rows > 0:
+
 
 
 
