@@ -19,7 +19,7 @@ app = Flask(__name__)
 @app.route('/home')
 @app.route('/index.html')
 def homepage():
-    return send_from_directory('static/index.html')
+    return send_from_directory(directory="static", filename="index.html", path=".")
 
 
 # Retrieve all shared overlays/data on centralized Azure psql database
@@ -180,7 +180,7 @@ def request_mosaic():
 # Create a new local data entry
 # Not complete
 @app.route('/create/local', methods=['GET', 'POST'])
-def request_mosaic():
+def create_new():
 
     # Need to take in user inputted parameters for mosaic here
     default_name = '0'
