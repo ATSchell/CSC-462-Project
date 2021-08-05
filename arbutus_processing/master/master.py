@@ -84,7 +84,7 @@ def add_colour(file_path, out_path):
     plt.axis('off')
     imgplot.set_cmap('nipy_spectral')
     plt.savefig(out_path, bbox_inches='tight', dpi=550, pad_inches=0)
-    flip_image(out_path)
+   # flip_image(out_path)
 
 
 # This tiling function is based on this
@@ -374,6 +374,7 @@ def check_database():
 
     return mosaic_entry
 
+
 # This function uploaded final processed image to Azure Data Lake Storage
 # and then updates the centralized database with the path in the Data Lake
 def upload_output(output_name, overlay_id):
@@ -381,7 +382,7 @@ def upload_output(output_name, overlay_id):
     blob_service_client = BlobServiceClient.from_connection_string(connection_string_azure_data_lake)
     container_client = blob_service_client.get_container_client("test")
     with open("./output_merged/"+output_name+"-output.png", "rb") as data:
-        blob_client = container_client.upload_blob(name=output_path, data=data)
+        blob_client = container_client.upload_blob(name='earth_daily_processed/'+output_name+'.png', data=data)
 
     dbconn = psycopg2.connect(**connection_string_azure_psql)
     cursor = dbconn.cursor()
@@ -395,12 +396,23 @@ if __name__ == '__main__':
 
     # The initial input test sites will be determined by an external request from the user interface
     # In the form of a request to the server and handled by another function listening for requests
+    curr_id = 0
+
     while True:
         mosaic = check_database()   # Check is there are any unprocessed mosaic requests
+
         if mosaic is None:
             time.sleep(15)
+            print("continuing")
             continue
+
+
         check_parameters()          # Make sure the requested parameters are not too large
+        reset_dir('./processed/')
+        reset_dir('./output_png/')
+        reset_dir('./output_merged/')
+        reset_dir('./tiles1/')
+
         download_images()
         create_tasks(OUT_PATH, './tiles1/')
         print('setup complete')
