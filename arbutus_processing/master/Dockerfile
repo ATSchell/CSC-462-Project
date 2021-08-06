@@ -25,5 +25,5 @@ RUN pip3 install -r requirements.txt
 
 EXPOSE 50051
 
-COPY ["dist_processing_pb2.py", "dist_processing_pb2_grpc.py", "master.py", "config.py", "/app/"]
+COPY ["dist_processing_pb2.py", "dist_processing_pb2_grpc.py", "master.py", "config.py", "connection.py", "/app/"]
 CMD ["python3", "master.py"]
